@@ -1,28 +1,45 @@
 #ifndef POINTCLOUDVIEW_H
 #define POINTCLOUDVIEW_H
 
-#include <QGLWidget>
 #include <opencv2/opencv.hpp>
+//#include <gl/glew.h>
 #include <qglviewer.h>
+#include <QMouseEvent>
+#include "NiUserTracker.h"
+#include <QMapIterator>
 
 using namespace cv;
-class Viewer : public QGLViewer
+class PointCloudViewer : public QGLViewer
 {
-
+    Q_OBJECT
 public:
-    Viewer(Mat *rgb, Mat *cloud) {rgbImg = rgb, pointCloud = cloud; }
-protected :
+    PointCloudViewer(Mat *rgb, Mat *cloud, QMap<unsigned int, Skelton> *skeltons)
+        : rgbImg(rgb), pointCloud(cloud), userSkeltons(skeltons) {}
+    ~PointCloudViewer();
+protected:
     virtual void draw();
     virtual void init();
     virtual void animate();
+    virtual void mouseMoveEvent(QMouseEvent *event);
+
+signals:
+    void debugTextChanged(QString text);
 
 private:
-    GLuint id, DisplayList;
-    QTimer timer;
+    GLuint texid, background;
+    GLuint buffers[2];
+    float *texcoord;
     Mat *rgbImg, *pointCloud;
-    VideoCapture capture;
-    qglviewer::ManipulatedFrame* light1;
-    qglviewer::ManipulatedFrame* light2;
+    QMap<unsigned int, Skelton> *userSkeltons;
+    qglviewer::Vec cursorPos;
+    QString cursorText, cameraPosText;
+
+    void initBackground();
+    void initLights();
+    void initBuffers();
+    void constructDebugText();
+    void drawPointCloud();
+    void drawUserSkeltons();
 
 };
 
